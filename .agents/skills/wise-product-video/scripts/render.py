@@ -311,9 +311,13 @@ class Movie:
 
     def render(self, output):
         output.parent.mkdir(parents=True, exist_ok=True)
-        provenance = {'origin':self.motion_origin, 'motion':self.motion}
+        if self.cfg.get('native_capture'):
+            capture = json.loads(self.path(self.cfg['native_capture']).read_text())
+            provenance = {'origin':'native prototype recording; no reconstructed UI transitions', 'capture':capture}
+        else:
+            provenance = {'origin':self.motion_origin, 'motion':self.motion}
         output.with_suffix('.motion.json').write_text(json.dumps(provenance,indent=2)+'\n')
-        print(f"Motion source: {self.motion_origin}; commit {self.motion['source']['commit']}", flush=True)
+        print(f"Motion source: {provenance['origin']}", flush=True)
         ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
         with output.with_suffix('.encode.log').open('w') as log:
             p = subprocess.Popen([ffmpeg, '-y', '-v', 'warning', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{self.size[0]}x{self.size[1]}', '-r', str(self.fps), '-i', '-', '-an', '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', str(output)], stdin=subprocess.PIPE, stderr=log)

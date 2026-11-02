@@ -5,3 +5,4 @@ output/
 projects/
 examples/generated/
 *.encode.log
+node_modules/

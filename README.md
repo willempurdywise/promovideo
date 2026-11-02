@@ -1,6 +1,6 @@
 # Wise Product Video
 
-A reusable Codex skill for creating Wise-style product demo videos from screenshots and a written storyboard. Includes a configurable Python renderer, Wise logo, spinning loader, and success animation.
+A reusable Codex skill for creating Wise-style product demo videos from a running prototype or uploaded screenshots and a written storyboard. Includes a configurable Python renderer, Wise logo, spinning loader, and success animation.
 
 ## Test with your own screens
 
@@ -73,3 +73,13 @@ Scrolling uses smaller eased movements separated by pauses. Supply a tall conten
 If installing just the skill folder through a skill installer, check whether `vendor/base-surfaces` was populated. Some installers omit submodules. A recursive clone is the recommended setup; an explicit local `--base-surfaces` path remains supported.
 
 Uploaded screens are cropped into one shared phone frame with a fixed **40 px outer corner radius**. The mask also clips transitions and media overlays; source uploads and full-canvas backgrounds remain unchanged.
+
+## Use with an existing prototype
+
+Install/copy the complete skill folder into the prototype's `.agents/skills/`, then ask:
+
+> Use $wise-product-video to show this prototype: tap Send, choose Clara Smith, enter 500 GBP, continue to review, then complete the demo payment.
+
+The skill reads the repo, starts or reuses the local app, asks for format/background/logo/timing choices, then captures the real journey. It uses the prototype's actual screens, content and animation rather than recreating them. It saves an editable journey and applies the selected video framing around the recording. Static screenshot mode remains available when used independently.
+
+See [prototype capture](.agents/skills/wise-product-video/references/prototype.md) for setup, supported actions, and capture limits. Browser capture is typically 25 fps even when the final MP4 is encoded at 60 fps.
