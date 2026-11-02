@@ -1,0 +1,4 @@
+interface:
+  display_name: "Promovideo"
+  short_description: "Use $promovideo to create a video with these screens"
+  default_prompt: "Use $promovideo to create a video with these screens"

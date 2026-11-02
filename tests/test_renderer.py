@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location('renderer', ROOT/'.agents/skills/wise-product-video/scripts/render.py')
+spec = importlib.util.spec_from_file_location('renderer', ROOT/'.agents/skills/promovideo/scripts/render.py')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Wise Product Video"
-  short_description: "Use $wise-product-video to create a video with these screens"
-  default_prompt: "Use $wise-product-video to create a video with these screens"

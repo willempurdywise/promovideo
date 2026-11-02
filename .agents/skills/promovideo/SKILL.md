@@ -1,6 +1,6 @@
 ---
-name: wise-product-video
-description: Use $wise-product-video to create a video with these screens
+name: promovideo
+description: Use $promovideo to create a video with these screens
 ---
 
 # Wise product video
