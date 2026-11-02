@@ -16,6 +16,7 @@ The optional helper drives Playwright and records the actual viewport:
 ```sh
 npm ci --prefix <skill>/scripts
 node <skill>/scripts/node_modules/playwright/cli.js install chromium
+export WISE_FFMPEG="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')"
 node <skill>/scripts/capture-prototype.mjs <project>/journey.json <project>/capture
 python <skill>/scripts/render.py <project>/capture/storyboard.json --output <project>/output/demo.mp4
 ```
@@ -43,9 +44,9 @@ The Node dependency is separate from the Python screenshot renderer. Use an isol
 
 This is illustrative: verify names in the actual prototype. Each target uses `role` with exact `name`, `testId`, or `selector`. Supported actions: click, fill, type (90 ms per character by default), press (`key`), waitFor (visible), pause (`ms`), scroll. Scroll targets the real scroll container with `swipes: [{"dy":180,"duration":450,"pause":600}, ...]`, moving in short eased increments. Existing app listeners run normally. Optional `setup` actions occur before recording's chosen start, useful for navigation to the intended initial state. Keep setup non-destructive and scoped to prototype state.
 
-The helper records a WebM, initial/final PNGs, an action-timing manifest and a compositor storyboard. The compositor uses one video overlay: no reconstructed page or modal movement. `presentation` holds the already-selected user choices, not new assumed defaults. Browser video is typically 25 fps; a 60 fps MP4 repeats frames and does not create native 60 fps capture. If true 60 fps is required, use a suitable native/browser capture method and document it.
+The helper captures every Chromium compositor frame directly through CDP, preserving timestamps, and encodes a 60 fps MP4. It saves raw PNG frames, initial/final PNGs, frame-delivery metrics, an action-timing manifest and a compositor storyboard. The compositor uses one video overlay: no reconstructed page or modal movement. `presentation` holds the already-selected user choices, not new assumed defaults. This bypasses Playwright’s built-in 25 fps recording and its frame throttle. Actual delivery still depends on browser rendering and machine load. `capture.json` and `frames.json` report the observed median cadence during active updates. Static holds naturally need no new frames; a 60 fps file alone is not evidence of 60 distinct frames each second. Inspect motion and metrics; do not claim guaranteed 60 fps capture when the browser delivers less.
 
-Trim offsets are based on wall-clock time around page recording and setup, so inspect the opening/closing frames and correct trim if needed. The helper limits a take to 60 seconds; the screenshot compositor decodes video overlays into memory. For longer/high-resolution recordings, split captures or use a streaming video compositor. Do not silently truncate the journey.
+Capture begins after setup and page readiness; no estimated startup trim is needed. Inspect opening/closing frames and action alignment. The helper limits a take to 60 seconds; the screenshot compositor decodes video overlays into memory. At 60 fps memory use is higher. For longer/high-resolution recordings, split captures or use a streaming video compositor. Do not silently truncate the journey.
 
 ## Verify and deliver
 

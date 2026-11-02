@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Drive a real local prototype; preserve its own DOM, content and animations.
 import {chromium} from 'playwright';
-import {readFile, writeFile, mkdir, rename} from 'node:fs/promises';
+import {readFile, writeFile, mkdir} from 'node:fs/promises';
 import path from 'node:path';
-import {performance} from 'node:perf_hooks';
+import {startCapture} from './chromium-capture.mjs';
 
 const [recipeFile, destination] = process.argv.slice(2);
+const ffmpeg=process.env.WISE_FFMPEG;
+if(!ffmpeg) throw Error('Set WISE_FFMPEG to an FFmpeg executable (imageio_ffmpeg.get_ffmpeg_exe()).');
 if (!recipeFile || !destination) throw Error('Usage: node capture-prototype.mjs journey.json output-directory');
 const recipe = JSON.parse(await readFile(recipeFile, 'utf8'));
 const url = new URL(recipe.url);
@@ -14,10 +16,9 @@ const out = path.resolve(destination);
 await mkdir(out,{recursive:true});
 const viewport = recipe.viewport ?? {width:390,height:844};
 const browser = await chromium.launch({headless:true});
-const context = await browser.newContext({viewport, recordVideo:{dir:out,size:viewport}, reducedMotion:'no-preference', colorScheme:recipe.colorScheme ?? 'light'});
+const context = await browser.newContext({viewport, reducedMotion:'no-preference', colorScheme:recipe.colorScheme ?? 'light'});
 const page = await context.newPage();
-const video = page.video();
-const recordingStart = performance.now();
+
 const actions = [];
 const target = spec => {
   if (spec.role) return page.getByRole(spec.role,{name:spec.name,exact:true});
@@ -61,21 +62,22 @@ try {
   for(const step of recipe.setup ?? []) await act(step);
   await page.waitForTimeout(recipe.settle ?? 300);
   await page.screenshot({path:path.join(out,'first.png')});
-  const trimStart=(performance.now()-recordingStart)/1000;
+  const capture=await startCapture(context,page,out,viewport);
+  const trimStart=0;
   for(const step of recipe.steps) {
-    const start=(performance.now()-recordingStart)/1000-trimStart;
+    const start=Date.now()/1000-capture.start;
     await act(step);
-    actions.push({action:step.action,start,end:(performance.now()-recordingStart)/1000-trimStart});
+    actions.push({action:step.action,start,end:Date.now()/1000-capture.start});
   }
   await page.waitForTimeout(recipe.finalHold ?? 1200);
-  const duration=(performance.now()-recordingStart)/1000-trimStart;
+  const duration=Date.now()/1000-capture.start;
   if(duration>60) throw Error('Capture exceeds 60 seconds. Split the journey into shorter recordings.');
   await page.screenshot({path:path.join(out,'last.png')});
+  const metrics=await capture.stop(ffmpeg);
   await context.close();
-  await rename(await video.path(),path.join(out,'prototype.webm'));
-  await writeFile(path.join(out,'capture.json'),JSON.stringify({url:recipe.url,viewport,trimStart,duration,actions,note:'Native browser recording, typically 25 fps; 60 fps export repeats source frames. Trim is wall-clock based; inspect first/last frames.'},null,2));
+  await writeFile(path.join(out,'capture.json'),JSON.stringify({url:recipe.url,viewport,trimStart,duration,actions,metrics,note:'Direct Chromium compositor capture; every delivered frame retained with timestamps. 60fps export holds frames when Chromium delivers fewer updates. Cadence excludes long static holds and is not a guarantee of 60 unique frames per second.'},null,2));
   const presentation=recipe.presentation ?? {};
-  const storyboard={...presentation, native_capture:'capture.json', screens:{prototype:{file:'first.png',flatten_radius:0}},scenes:[{screen:'prototype',hold:duration,overlays:[{file:'prototype.webm',box:[0,0,390,844],trim_start:trimStart,max_duration:duration,fps:25,loop:false}]}]};
+  const storyboard={...presentation, native_capture:'capture.json', screens:{prototype:{file:'first.png',flatten_radius:0}},scenes:[{screen:'prototype',hold:duration,overlays:[{file:'prototype.mp4',box:[0,0,390,844],trim_start:trimStart,max_duration:duration,fps:60,loop:false}]}]};
   // Keep capture aspect ratio rather than squeezing a desktop view into a phone.
   if(viewport.width/viewport.height !== 390/844) throw Error('Capture saved. Set a matching phone size/overlay box before rendering this nonstandard viewport.');
   await writeFile(path.join(out,'storyboard.json'),JSON.stringify(storyboard,null,2));

@@ -82,4 +82,4 @@ Install/copy the complete skill folder into the prototype's `.agents/skills/`, t
 
 The skill reads the repo, starts or reuses the local app, asks for format/background/logo/timing choices, then captures the real journey. It uses the prototype's actual screens, content and animation rather than recreating them. It saves an editable journey and applies the selected video framing around the recording. Static screenshot mode remains available when used independently.
 
-See [prototype capture](.agents/skills/wise-product-video/references/prototype.md) for setup, supported actions, and capture limits. Browser capture is typically 25 fps even when the final MP4 is encoded at 60 fps.
+See [prototype capture](.agents/skills/wise-product-video/references/prototype.md) for setup, supported actions, and capture limits. Direct Chromium capture bypasses Playwright’s 25 fps cap and retains every delivered frame, exporting at 60 fps. Capture metrics report observed delivery; actual smoothness depends on browser and machine performance.
