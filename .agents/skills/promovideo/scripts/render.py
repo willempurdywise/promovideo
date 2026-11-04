@@ -69,10 +69,16 @@ class Movie:
         self.size = FORMATS[c['format']] if 'format' in c else tuple(c.get('canvas', [1080, 1080]))
         self.fps = c.get('fps', 60)
         self.x, self.y, self.w, self.h = c.get('phone', [(self.size[0]-390)//2, (self.size[1]-844)//2, 390, 844])
+        if c.get('device') == 'desktop':
+            sw, sh = c['viewport']
+            margin = round(min(self.size)*.08)
+            scale = min((self.size[0]-2*margin)/sw, (self.size[1]-2*margin-48)/sh)
+            self.w, self.h = round(sw*scale), round(sh*scale)
+            self.x, self.y = (self.size[0]-self.w)//2, (self.size[1]-self.h)//2
         if self.fps <= 0 or min(*self.size, self.w, self.h) <= 0 or any(v % 2 for v in self.size):
             raise ValueError('Use positive dimensions/fps and even canvas dimensions for H.264.')
         # One fixed outer mask keeps all uploaded screens and moving layers consistent.
-        self.mask = rounded((self.w, self.h), 40)
+        self.mask = rounded((self.w, self.h), 16 if c.get('device') == 'desktop' else 40)
         background = c.get('background', '#9FE870')
         background = COLORS.get(background.lower(), background).upper()
         self.base = Image.new('RGB', self.size, background)
@@ -97,7 +103,7 @@ class Movie:
                 im = im.crop(tuple(spec['crop']))
             im = im.resize((self.w, self.h), RESAMPLE)
             # Photograph corners must never travel inside the phone as background slivers.
-            r = spec.get('flatten_radius', 42)
+            r = spec.get('flatten_radius', 0 if c.get('device') == 'desktop' else 42)
             if r:
                 outside = rounded(im.size, r).point(lambda v: 255 if v < 255 else 0)
                 fill = Image.new('RGB', im.size, spec.get('top_fill', im.getpixel((self.w//2, 8))))
@@ -292,6 +298,39 @@ class Movie:
         result.paste(tile, (0, top+round((self.h-top+sheet_motion['extra_travel'])*(1-visibility))), rounded(tile.size, trans.get('radius', sheet_motion['radius']), True))
         return result
 
+    def presentation_frame(self, t):
+        im = self.phone(t)
+        # Global content-time paths keep the desktop pointer independent of page slides.
+        keys = self.cfg.get('cursor', [])
+        if keys:
+            point = keys[0]
+            x, y = point['x'], point['y']
+            for a, b in zip(keys, keys[1:]):
+                if t < a['at']:
+                    break
+                u = max(0, min(1, (t-a['at'])/max(.001,b['at']-a['at'])))
+                u = u*u*(3-2*u)
+                x, y = a['x']+(b['x']-a['x'])*u, a['y']+(b['y']-a['y'])*u
+                if t <= b['at']:
+                    break
+            pressed = any(k.get('click') and 0 <= t-k['at'] <= .12 for k in keys)
+            scale = .85 if pressed else 1
+            points = [(x+px*scale,y+py*scale) for px,py in [(0,0),(0,24),(6,18),(11,28),(16,25),(11,16),(21,16)]]
+            ImageDraw.Draw(im).polygon(points, fill='white', outline='#21231D', width=2)
+        for z in self.cfg.get('zooms', []):
+            start, duration, hold = z['at'], z.get('duration', .65), z.get('hold', 1.5)
+            local = t-start
+            if 0 <= local <= duration*2+hold:
+                u = min(1, local/duration) if local <= duration+hold else 1-(local-duration-hold)/duration
+                ease = u*u*(3-2*u)
+                scale = 1+(z.get('scale',1.6)-1)*ease
+                cw, ch = self.w/scale, self.h/scale
+                cx = self.w/2+(z['x']-self.w/2)*ease
+                cy = self.h/2+(z['y']-self.h/2)*ease
+                left, top = max(0,min(self.w-cw,cx-cw/2)), max(0,min(self.h-ch,cy-ch/2))
+                im = im.transform(im.size, Image.Transform.EXTENT, (left,top,left+cw,top+ch), Image.Resampling.BICUBIC)
+        return im
+
     def frame(self, t):
         im = self.base.copy()
         if self.logo:
@@ -306,7 +345,7 @@ class Movie:
         opacity = fade_in*(1-fade_out)
         if opacity > 0:
             offset = round(24*(1-enter)+24*leave)
-            im.paste(self.phone(max(0, min(self.content_duration-1/self.fps, t-self.intro))), (self.x, self.y+offset), self.mask.point(lambda v: round(v*opacity)))
+            im.paste(self.presentation_frame(max(0, min(self.content_duration-1/self.fps, t-self.intro))), (self.x, self.y+offset), self.mask.point(lambda v: round(v*opacity)))
         return im
 
     def render(self, output):
