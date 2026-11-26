@@ -53,3 +53,5 @@ Capture begins after setup and page readiness; no estimated startup trim is need
 Replay the result. Check action order, correct native screens/content, typing, loading states, tap-to-response timing, short scrolls with pauses, modal overlay coverage and success timing. Inspect intro/outro and loop seam. Check the final MP4 decodes, then deliver it with the editable journey, raw recording, capture manifest and contact sheet. Clearly distinguish a native recording from a screenshot reconstruction.
 
 For base-surfaces specifically, run the user's active base-surfaces checkout and its mobile flow; the bundled submodule is only a screenshot-mode motion reference. Do not substitute it for their working prototype or refresh/reset their checkout.
+
+After compositing, launch the [interactive review player](review.md) with the generated storyboard and matching MP4, as in screenshot mode.

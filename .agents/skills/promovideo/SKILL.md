@@ -71,7 +71,8 @@ Detect desktop from the actual layout, not the selected output aspect ratio. Rea
 3. Read [the renderer schema](references/storyboard.md). Use `scripts/render.py` for screenshot-based scenes, transitions and media overlays. Configure crop rectangles from inspected assets, not assumed phone dimensions. Copy the renderer into the project only when custom animation is required; keep that adaptation editable and explain its purpose.
 4. Use an isolated Python 3.11 or 3.12 environment and install `scripts/requirements.txt`. The renderer uses imageio-ffmpeg's binary, so a system FFmpeg installation is unnecessary. Resolve the skill directory from this file's location rather than a hardcoded home path.
 5. Render with `python <skill-directory>/scripts/render.py <project>/storyboard.json --output <project>/output/demo-v1.mp4`. Inspect the generated contact sheet AND frames at transition midpoints. The renderer performs a full media decode after encoding; that does not replace visual inspection.
-6. Deliver a clickable MP4 and contact-sheet preview plus the editable storyboard. State duration and any missing assets or approximations. Do not claim visual review based only on successful encoding.
+6. Launch the [interactive review player](references/review.md) for the rendered storyboard/video pair. Include it for prototype captures too. It offers timeline scrubbing, live background colours and timestamped comments; background exports run locally and free-text edits use an explicit agent handoff.
+7. Deliver a clickable MP4 and contact-sheet preview plus the editable storyboard. State duration and any missing assets or approximations. Do not claim visual review based only on successful encoding.
 
 ## Pull motion from base-surfaces (screenshot mode only)
 
