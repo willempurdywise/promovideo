@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fieldwork sample prototype</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f7f1;color:#252b22;font:16px system-ui,sans-serif}header{padding:22px 6%;background:white;border-bottom:1px solid #e0e3d7;font-weight:800}article{width:min(470px,90%);margin:clamp(30px,12vh,95px) auto;padding:clamp(21px,5vw,44px);border:1px solid #dde1d6;border-radius:23px;background:white;box-shadow:0 20px 70px #24331313}.symbol{display:grid;place-items:center;width:45px;height:45px;border-radius:14px;background:#dcedbe;font-size:24px}h1{font-size:clamp(26px,4vw,38px);letter-spacing:-1.1px;margin:.45em 0 .2em}p{color:#586551;margin:0 0 24px}button,input{font:inherit;border-radius:10px;padding:11px 14px}input{width:100%;display:block;margin:8px 0 18px;border:1px solid #cbd2c4}button{border:0;background:#263a22;color:white;font-weight:650;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #7f9e68;outline-offset:2px}
+</style>
+<header>◈ Fieldwork</header>
+<article aria-live="polite"><div class="symbol" aria-hidden="true">✦</div><h1>Make room for good work</h1><p>Set up a workspace to organise your next project.</p><button id="start">Get started</button></article>
+<script>
+const card = document.querySelector('article');
+document.querySelector('#start').onclick = () => {
+  card.innerHTML = '<div class="symbol" aria-hidden="true">✦</div><h1>Name your workspace</h1><p>You can change this any time.</p><form><label>Workspace name<input id="name" required maxlength="50"></label><button>Create workspace</button></form>';
+  card.querySelector('form').onsubmit = event => {
+    event.preventDefault();
+    const name = card.querySelector('input').value;
+    card.innerHTML = '<div class="symbol" aria-hidden="true">✓</div><h1></h1><p>Your workspace is ready.</p>';
+    card.querySelector('h1').textContent = name;
+  };
+};
+</script>
+</html>

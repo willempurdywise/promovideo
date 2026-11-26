@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Take Studio</title>
+<link rel="stylesheet" href="/editor.css">
+<script src="/editor.js" defer></script>
+</head>
+<body>
+<button id="settingsToggle" class="studio-launcher" aria-label="Open video settings" aria-expanded="false" aria-controls="settings" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9.6 3-.6 2-1.7 1-2-.5-2.4 4.1 1.4 1.5v1.9L2.9 14l2.4 4.1 2-.5 1.7 1 .6 2h4.8l.6-2 1.7-1 2 .5 2.4-4.1-1.4-1.5v-1.9l1.4-1.5L18.7 5l-2 .5-1.7-1-.6-2z"/><circle cx="12" cy="12" r="3"/></svg><span id="renderBadge" hidden>Rendering…</span></button>
+<section class="start" id="startScreen">
+<div class="start-card">
+<h1>Open your prototype</h1>
+<p>Choose your project folder. Take Studio can open HTML directly or run the project’s npm build script. Only select projects you trust.</p>
+<label class="upload"><input id="folder" type="file" webkitdirectory multiple><span class="upload-icon" aria-hidden="true">↑</span><span><strong>Choose prototype folder</strong><small>HTML or npm project folder</small></span></label>
+<div class="start-actions"><button id="sample">Try a sample</button><button id="resume" hidden>Resume last review</button></div>
+<p id="startStatus" role="status"></p>
+</div>
+</section>
+<main id="editor" class="without-sidebar" hidden>
+<section class="workspace" aria-label="Video workspace">
+<div class="workspace-head"><div><h1>Video canvas</h1><p id="subtitle">Preview your prototype and frame your video.</p></div></div>
+<div class="stage-wrap" id="stageWrap"><div class="stage" id="stage"><iframe id="prototypePreview" sandbox="allow-scripts allow-same-origin allow-forms" title="Prototype preview"></iframe><video id="video" playsinline hidden></video></div></div>
+<section class="timeline" aria-label="Review timeline">
+<div class="timeline-top"><button id="play" aria-label="Play" disabled>▶</button><strong id="time">00:00.0</strong><span>/</span><span id="duration">00:00.0</span><button id="annotate" disabled>＋ Add comment</button></div>
+<div class="track"><input id="scrub" type="range" min="0" max="0" step=".01" value="0" aria-label="Video position" disabled><div id="markers"></div></div>
+<p id="timelineHint">Your finished video will appear here for review.</p>
+</section>
+</section>
+<aside id="settings" aria-label="Video settings" hidden>
+<div class="tabs" aria-label="Canvas mode"><button id="previewTab" aria-pressed="true">Settings</button><button id="reviewTab" aria-pressed="false" disabled>Review</button><button id="optionsToggle" class="more-options" aria-label="Prototype options" aria-expanded="false" aria-controls="prototypeOptions">···</button><button id="closeSettings" hidden aria-label="Close video settings">Close</button></div>
+<div id="prototypeOptions" class="prototype-options" hidden><p id="sourceName"></p><label>Viewport<select id="viewport"><option value="desktop">Desktop</option><option value="mobile">Mobile</option></select></label><label>Reading pauses<select id="pace"><option value="readable">Readable</option><option value="slow">Longer</option><option value="brisk">Shorter</option></select></label><div class="background-actions"><button id="restart">Restart prototype</button><label class="image-button">Change folder<input id="changeFolder" type="file" webkitdirectory multiple></label></div></div>
+<div id="settingsBody">
+<section class="control-group"><h3>Format</h3><div class="segments" id="formatSegments" role="group" aria-label="Video format"><button data-value="landscape" aria-pressed="true">16:9</button><button data-value="square" aria-pressed="false">1:1</button><button data-value="portrait" aria-pressed="false">9:16</button></div><select id="format" hidden aria-label="Video format"><option value="landscape">16:9</option><option value="square">1:1</option><option value="portrait">9:16</option></select></section>
+<section class="control-group timing-group"><h3><label for="timing">Timing</label></h3><input id="timing" type="range" min="0" max="2" step="1" value="1" aria-valuetext="Normal speed, readable pauses"><div class="range-labels"><span>Slow</span><span>Fast</span></div><select id="speed" hidden><option value="0.75">Slower</option><option value="1" selected>Normal</option><option value="1.25">Faster</option></select></section>
+<section class="control-group"><h3>Show cursor</h3><div class="segments connected" id="cursorSegments" role="group" aria-label="Show cursor"><button data-value="yes" aria-pressed="true">Yes</button><button data-value="no" aria-pressed="false">No</button></div><input id="cursor" type="checkbox" checked hidden></section>
+<section class="control-group background-group"><h3>Background</h3><div class="swatches" id="swatches"></div><div class="background-actions"><input id="hexColour" type="text" maxlength="7" placeholder="#" aria-label="Background hex colour" spellcheck="false"><label class="image-button">Upload image<input id="image" type="file" accept="image/png,image/jpeg,image/webp"></label></div><button id="removeImage" class="text-button" hidden>Remove image</button><small id="imageName"></small></section>
+<section class="control-group storyboard-group"><h3><label for="storyboard">Storyboard</label></h3><textarea id="storyboard" rows="5" maxlength="4000" placeholder="Type a storyboard prompt"></textarea><button id="exampleStory" hidden>Try an example</button></section>
+</div>
+<section id="feedback" hidden><h3>Review comments</h3><form id="commentForm" hidden><label for="commentText" id="commentTime"></label><textarea id="commentText" rows="3" maxlength="1000" required placeholder="What should change here?"></textarea><div class="form-actions"><button type="button" id="cancel">Cancel</button><button class="primary" type="submit">Save comment</button></div></form><div id="comments"></div></section>
+<footer class="panel-footer"><p id="status" role="status" aria-live="polite"></p><button id="render" class="primary" title="Copy settings and storyboard to paste into your project chat" hidden>Copy video settings</button><div id="copyFallback" hidden><label for="briefText">Video settings</label><textarea id="briefText" rows="6" readonly></textarea><small>Select and copy this text into your project chat.</small></div><a id="download" hidden download="prototype-video.mp4">Download MP4</a></footer>
+</aside>
+</main>
+</body>
+</html>

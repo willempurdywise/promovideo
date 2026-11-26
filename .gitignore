@@ -6,3 +6,7 @@ projects/
 examples/generated/
 *.encode.log
 node_modules/
+
+# Take Studio project outputs
+.take-studio/
+.agents/skills/take-studio/app/renders/

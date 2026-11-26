@@ -2,6 +2,26 @@
 
 A reusable Codex skill for creating Wise-style product demo videos from a running prototype or uploaded screenshots and a written storyboard. Includes a configurable Python renderer, Wise logo, spinning loader, and success animation.
 
+## Take Studio — interactive prototype videos
+
+Take Studio is included alongside Promovideo at [`.agents/skills/take-studio/`](.agents/skills/take-studio/SKILL.md). Use it to explore a running prototype, configure a video in a floating settings panel, copy a brief into your agent chat, and review the resulting video with timestamped comments.
+
+It includes colour or image backgrounds, three output formats, timing and cursor controls, theme preservation, and native animation timelines sampled at 60 fps. The agent rehearses natural-language storyboards against the actual UI before recording. Native phone framing and status bars are supported through the included Base Surfaces adapter; other phone shells need an adapter for their actual structure.
+
+### Install in another project
+
+Ask Codex's skill installer to install **the `take-studio` skill** from this repository at `.agents/skills/take-studio`, or copy that complete folder into `~/.codex/skills/take-studio/`. Access to this repository is required. Start a new project chat if the skill is not yet listed, then ask:
+
+```text
+Use $take-studio to open this prototype so I can configure and create a video.
+```
+
+The skill requires Node.js, FFmpeg and Playwright Chromium. From its `app` directory, run `npm ci` and `npx playwright install chromium`. Set `FFMPEG_PATH` if FFmpeg is not on PATH. The agent starts the editor against your project's verified local URL and saves briefs, backgrounds and videos in that project's `.take-studio/renders/` folder.
+
+Take Studio does not require the Base Surfaces submodule for ordinary web prototypes. See [other-project setup](.agents/skills/take-studio/references/other-prototypes.md) and [appearance integration](.agents/skills/take-studio/references/prototype-appearance.md) for custom themes, phone shells and external assets.
+
+To check the capture engine, run `node tests/offline-capture.mjs` from the skill's `app` directory after installing dependencies and Chromium. This verifies 30 distinct samples during a native 500 ms transition, exact sample spacing and the native completion event.
+
 ## Test with your own screens
 
 1. Clone this private repository with its linked base-surfaces dependency, then open it as a Codex project:
