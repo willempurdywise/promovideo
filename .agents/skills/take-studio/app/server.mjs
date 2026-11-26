@@ -153,7 +153,7 @@ async function render(job, data, steps, project) {
         if (capture.time > 90) throw Error('Capture stopped or exceeded the 90-second limit.');
         try {
           if (action === 'hold') await capture.advance(Number(value) * 1000 * speed);
-          
+
           if (action === 'scroll') await capture.scroll(app,Number(value));
           if (['click','selector','pick','type','amount'].includes(action)) {
             let target,lastError;
